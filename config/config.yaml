@@ -1,0 +1,60 @@
+app:
+  name: Pricer
+  version: 1.0.0
+  log_level: INFO
+
+# Browsers and User agent for scrapping - The user agent versions must be frequently updated
+browser:
+  headless: true
+  page_load_timeout: 30
+  implicit_wait: 5
+  user_agents:
+    - "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36"
+    - "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36"
+    - "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:123.0) Gecko/20100101 Firefox/123.0"
+    - "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:123.0) Gecko/20100101 Firefox/123.0"
+    - "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36 Edg/122.0.0.0"
+    - "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.3 Safari/605.1.15"
+
+scraper:
+  delay_min: 1.5
+  delay_max: 4.0
+  max_retries: 3
+  retry_backoff: 2.0
+  results_per_platform: 5
+
+# Websites to be scrapped [add if more websites are required to scrapped]
+platforms:
+  amazon:
+    enabled: true
+    base_url: "https://www.amazon.in/s?k={query}"
+  flipkart:
+    enabled: true
+    base_url: "https://www.flipkart.com/search?q={query}&otracker=search"
+  meesho:
+    enabled: true
+    base_url: "https://www.meesho.com/search?q={query}"
+  myntra:
+    enabled: true
+    base_url: "https://www.myntra.com/{slug}?rawQuery={encoded}"
+  ajio:
+    enabled: true
+    base_url: "https://www.ajio.com/search/?text={query}"
+
+database:
+  path: "data/pricer.db"
+
+cache:
+  ttl_minutes: 15
+
+results:
+  output_dir: "results"
+
+chrome_driver_path: 'C:\Users\shibh\.wdm\drivers\chromedriver\win64\146.0.7680.165\chromedriver-win32\chromedriver.exe'
+
+logging:
+  level: INFO
+  file: "logs/app.log"
+  test_file: "logs/test.log"
+  format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+  test_format: "%(asctime)s - %(name)s - %(levelname)s - [TEST] %(message)s"

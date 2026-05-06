@@ -1,0 +1,30 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# Virtualenv
+venv/
+.venv/
+env/
+
+# Environment
+.env
+
+# App data
+data/*.db
+logs/
+results/
+
+# IDE
+.vscode/
+.antigavity/
+.idea/
+*.swp
+
+# OS
+.DS_store
+Thumbs.db
