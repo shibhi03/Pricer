@@ -40,21 +40,37 @@ class BaseScraper(ABC):
             "Upgrade-Insecure-Requests": "1"
         }
 
+    def _request_html(self, url: str, *, verify_ssl: bool = True) -> str:
+        kwargs = {
+            "headers": self.get_headers(),
+            "timeout": 15,
+            "impersonate": "chrome110",
+        }
+        if not verify_ssl:
+            kwargs["verify"] = False
+        response = requests.get(url, **kwargs)
+        response.raise_for_status()
+        return response.text
+
     def fetch_html(self, url: str) -> str:
         """
         Fetches the HTML content of the given URL with retries and delays.
         """
         retries = 0
+        verify_ssl = True
         while retries < self.max_retries:
             try:
                 # Add a random delay to mimic human behavior
                 time.sleep(random.uniform(self.delay_min, self.delay_max))
                 
                 # Use impersonate to bypass TLS fingerprinting blocks
-                response = requests.get(url, headers=self.get_headers(), timeout=15, impersonate="chrome110")
-                response.raise_for_status()
-                return response.text
+                return self._request_html(url, verify_ssl=verify_ssl)
             except Exception as e:
+                err = str(e).lower()
+                if verify_ssl and ("ssl" in err or "certificate" in err):
+                    print(f"[{self.__class__.__name__}] SSL verify failed; retrying without certificate verification.")
+                    verify_ssl = False
+                    continue
                 print(f"[{self.__class__.__name__}] Request failed for {url}: {e}")
                 retries += 1
                 if retries >= self.max_retries:

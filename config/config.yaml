@@ -50,7 +50,8 @@ cache:
 results:
   output_dir: "results"
 
-chrome_driver_path: 'C:\Users\shibh\.wdm\drivers\chromedriver\win64\146.0.7680.165\chromedriver-win32\chromedriver.exe'
+# Optional: set to a local chromedriver.exe if auto-download is blocked.
+# chrome_driver_path: ""
 
 logging:
   level: INFO

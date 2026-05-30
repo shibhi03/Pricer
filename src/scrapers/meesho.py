@@ -1,3 +1,4 @@
+import os
 import time
 from bs4 import BeautifulSoup
 from .base import BaseScraper
@@ -14,12 +15,12 @@ class MeeshoScraper(BaseScraper):
         
         try:
             from selenium import webdriver
-            from selenium.webdriver.chrome.service import Service
             from selenium.webdriver.chrome.options import Options
             from selenium.webdriver.common.by import By
             from selenium.webdriver.support.ui import WebDriverWait
             from selenium.webdriver.support import expected_conditions as EC
-            from webdriver_manager.chrome import ChromeDriverManager
+            from selenium.common.exceptions import SessionNotCreatedException
+            from src.core.driver import _get_chrome_service
         except ImportError:
             print("[Meesho] Selenium not installed. Skipping.")
             return []
@@ -39,13 +40,13 @@ class MeeshoScraper(BaseScraper):
         driver = None
         results = []
         try:
-            chrome_driver_path = self.config.get("chrome_driver_path")
-            if chrome_driver_path:
-                service = Service(chrome_driver_path)
-            else:
-                service = Service(ChromeDriverManager().install())
-            
-            driver = webdriver.Chrome(service=service, options=options)
+            service = _get_chrome_service(self.config)
+            try:
+                driver = webdriver.Chrome(service=service, options=options)
+            except (OSError, SessionNotCreatedException) as e:
+                print(f"[Meesho] ChromeDriver failed ({e}). Retrying with latest driver.")
+                service = _get_chrome_service(self.config, use_cache_only=True)
+                driver = webdriver.Chrome(service=service, options=options)
             driver.execute_cdp_cmd("Page.addScriptToEvaluateOnNewDocument", {
                 "source": "Object.defineProperty(navigator, 'webdriver', {get: () => undefined})"
             })

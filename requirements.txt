@@ -18,7 +18,8 @@ SQLAlchemy==2.0.28
 # sqlite3 is stdlib — no install needed
 
 # ── UI ─────────────────────────────────────────────────────
-flask==3.0.2             # OR  streamlit==1.32.2 (pick one)
+flask==3.0.2
+streamlit==1.32.2
 plotly==5.20.0                # charts in Streamlit
 
 # ── Scheduling & Alerts ────────────────────────────────────
