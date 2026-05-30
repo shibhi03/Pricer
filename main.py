@@ -16,12 +16,14 @@ def main():
     # If no args provided, default to starting UI
     if not args.query and not args.ui:
         print("Starting Streamlit UI...")
-        subprocess.run([sys.executable, "-m", "streamlit", "run", "ui/app.py"])
+        port = os.environ.get("PORT", "8501")
+        subprocess.run([sys.executable, "-m", "streamlit", "run", "ui/app.py", "--server.port", port, "--server.address", "0.0.0.0"])
         return
 
     if args.ui:
         print("Starting Streamlit UI...")
-        subprocess.run([sys.executable, "-m", "streamlit", "run", "ui/app.py"])
+        port = os.environ.get("PORT", "8501")
+        subprocess.run([sys.executable, "-m", "streamlit", "run", "ui/app.py", "--server.port", port, "--server.address", "0.0.0.0"])
         return
         
     if args.query:

@@ -1,0 +1,36 @@
+# Virtual environments
+venv/
+.venv/
+env/
+
+# Git and IDE
+.git/
+.gitignore
+.vscode/
+.idea/
+
+# Python cache
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+
+# Local data and dumps
+data/*.db
+logs/
+results/
+*.html
+~$*
+~WRL*
+*.docx
+
+# Tests (not needed in production image)
+test/
+
+# Misc
+.env
+*.tmp
+DockerFile
+amazon_dump.html
+meesho_dump.html
+debug_scrapers.py

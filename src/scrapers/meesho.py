@@ -20,12 +20,12 @@ class MeeshoScraper(BaseScraper):
             from selenium.webdriver.support.ui import WebDriverWait
             from selenium.webdriver.support import expected_conditions as EC
             from selenium.common.exceptions import SessionNotCreatedException
-            from src.core.driver import _get_chrome_service
+            from src.core.driver import _get_chrome_service, apply_chrome_runtime
         except ImportError:
             print("[Meesho] Selenium not installed. Skipping.")
             return []
 
-        options = Options()
+        options = apply_chrome_runtime(Options())
         options.add_argument("--headless=new")
         options.add_argument("--no-sandbox")
         options.add_argument("--disable-dev-shm-usage")

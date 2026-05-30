@@ -19,19 +19,21 @@ def _chromedriver_version_key(path: str) -> tuple:
         return tuple(int(part) for part in match.groups())
     return (0, 0, 0, 0)
 
-def _is_valid_chromedriver_exe(path: str) -> bool:
+_CHROMEDRIVER_NAMES = ("chromedriver.exe", "chromedriver")
+
+def _is_valid_chromedriver(path: str) -> bool:
     if not path or not os.path.isfile(path):
         return False
-    if os.path.basename(path).lower() != "chromedriver.exe":
+    if os.path.basename(path).lower() not in _CHROMEDRIVER_NAMES:
         return False
     if any(bad in path for bad in _INVALID_CHROMEDRIVER_NAMES):
         return False
     # Real chromedriver binaries are megabytes; notice files are tiny.
     return os.path.getsize(path) > 500_000
 
-def _resolve_chromedriver_exe(path: str) -> str | None:
-    """Map webdriver-manager output (sometimes a notice file) to chromedriver.exe."""
-    if _is_valid_chromedriver_exe(path):
+def _resolve_chromedriver_path(path: str) -> str | None:
+    """Map webdriver-manager output (sometimes a notice file) to chromedriver."""
+    if _is_valid_chromedriver(path):
         return path
 
     search_root = path if os.path.isdir(path) else os.path.dirname(path)
@@ -40,26 +42,37 @@ def _resolve_chromedriver_exe(path: str) -> str | None:
 
     for root, _, files in os.walk(search_root):
         for name in files:
-            if name.lower() == "chromedriver.exe":
+            if name.lower() in _CHROMEDRIVER_NAMES:
                 candidate = os.path.join(root, name)
-                if _is_valid_chromedriver_exe(candidate):
+                if _is_valid_chromedriver(candidate):
                     return candidate
     return None
 
+def apply_chrome_runtime(options: Options) -> Options:
+    """Apply container/local Chrome paths (e.g. Docker / Cloud Run)."""
+    chrome_bin = os.environ.get("CHROME_BIN")
+    if chrome_bin and os.path.isfile(chrome_bin):
+        options.binary_location = chrome_bin
+    return options
+
 def _find_cached_chromedriver() -> str | None:
     wdm_root = os.path.expanduser("~/.wdm")
-    candidates = [
-        p for p in glob.glob(os.path.join(wdm_root, "**", "chromedriver.exe"), recursive=True)
-        if _is_valid_chromedriver_exe(p)
-    ]
+    candidates = []
+    for pattern in ("**/chromedriver.exe", "**/chromedriver"):
+        candidates.extend(glob.glob(os.path.join(wdm_root, pattern), recursive=True))
+    candidates = [p for p in candidates if _is_valid_chromedriver(p)]
     if not candidates:
         return None
     return max(candidates, key=_chromedriver_version_key)
 
 def _get_chrome_service(config, *, use_cache_only=False):
+    env_driver = os.environ.get("CHROMEDRIVER_PATH")
+    if env_driver and os.path.isfile(env_driver):
+        return Service(env_driver)
+
     chrome_driver_path = config.get("chrome_driver_path")
     if chrome_driver_path:
-        resolved = _resolve_chromedriver_exe(os.path.expanduser(chrome_driver_path))
+        resolved = _resolve_chromedriver_path(os.path.expanduser(chrome_driver_path))
         if resolved:
             return Service(resolved)
         print(f"[driver] chrome_driver_path invalid or missing: {chrome_driver_path}. Falling back to cached driver.")
@@ -72,7 +85,7 @@ def _get_chrome_service(config, *, use_cache_only=False):
         raise FileNotFoundError("No cached ChromeDriver found under ~/.wdm")
 
     installed = ChromeDriverManager().install()
-    resolved = _resolve_chromedriver_exe(installed)
+    resolved = _resolve_chromedriver_path(installed)
     if not resolved:
         raise FileNotFoundError(
             f"ChromeDriverManager returned an invalid path ({installed}). "
@@ -83,7 +96,7 @@ def _get_chrome_service(config, *, use_cache_only=False):
 def create_driver(config):
     browser_config = config["browser"]
 
-    options = Options()
+    options = apply_chrome_runtime(Options())
 
     # Setting headless mode
     if browser_config.get("headless", False):
